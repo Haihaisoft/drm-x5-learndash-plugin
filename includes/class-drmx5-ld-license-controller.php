@@ -51,8 +51,8 @@ class DRMX5_LD_License_Controller {
         }
 
         if ($rights_mode === 'fixed') {
-            $rights_id = trim((string) $settings['fixed_rights_id']);
-            if ($rights_id === '') {
+            $rights_ids = DRMX5_LD_Settings::parse_rights_ids($settings['fixed_rights_id']);
+            if (!$rights_ids) {
                 self::error_page(__('Fixed RightsID mode is enabled, but no Fixed RightsID has been configured.', 'drmx5-learndash'));
             }
             if (empty($course['start']) || empty($course['end']) || $course['end'] < $course['start']) {
@@ -78,6 +78,7 @@ class DRMX5_LD_License_Controller {
             }
 
             if ($rights_mode === 'fixed') {
+                $rights_id = $rights_ids[random_int(0, count($rights_ids) - 1)];
                 $watermark = $user->user_email ?: $user->user_login;
                 $client->update_rights($rights_id, $watermark, $course['start'], $course['end']);
             }

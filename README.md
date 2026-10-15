@@ -1,7 +1,7 @@
 # DRM-X 5.0 LearnDash Plugin - WordPress Video DRM and Course Protection
 
 [![DRM-X 5.0](https://img.shields.io/badge/DRM--X-5.0-155EEF)](https://www.drm-x.com/en/products/drm-x-5.0/features)
-[![Plugin version](https://img.shields.io/badge/plugin-v1.0.0-2E8B57)](./drmx5-learndash.php)
+[![Plugin version](https://img.shields.io/badge/plugin-v1.1.1-2E8B57)](./drmx5-learndash.php)
 [![WordPress](https://img.shields.io/badge/WordPress-5.8%2B-21759B)](https://wordpress.org/)
 [![LearnDash](https://img.shields.io/badge/LMS-LearnDash-5B2D90)](https://www.learndash.com/)
 
@@ -26,7 +26,7 @@ Learn more about [DRM-X 5.0 digital content protection](https://www.drm-x.com/en
 - Blocks existing DRM-X users who are revoked or locked.
 - Supports DRM-X 5.0 International (`5.drm-x.com`) and China (`5.drm-x.cn`).
 - Supports License Profile RightsID from ZJGet POST data without changing DRM-X Rights.
-- Supports a fixed RightsID and calls `UpdateRightWithDisableVirtualMachine` before licensing.
+- Supports one or more fixed RightsIDs with automatic rights updates.
 - Embeds protected video using `[zjget-player]URL[/zjget-player]`.
 - Disables the player in WordPress editing and preview contexts.
 - Includes English and Simplified Chinese interface text.
@@ -42,15 +42,15 @@ Learn more about [DRM-X 5.0 digital content protection](https://www.drm-x.com/en
 
 ## Download and documentation
 
-- [Download DRM-X 5.0 LearnDash Plugin v1.0.0](https://github.com/Haihaisoft/drm-x5-learndash-plugin/raw/refs/heads/main/dist/drmx5-learndash-1.0.0.zip)
-- [English PDF User Guide](https://github.com/Haihaisoft/drm-x5-learndash-plugin/raw/refs/heads/main/docs/DRM-X-5.0-learndash-integration-user-guide-v1.0.0.pdf)
-- [中文 PDF 使用指南](https://github.com/Haihaisoft/drm-x5-learndash-plugin/raw/refs/heads/main/docs/DRM-X-5.0-learndash-integration-user-guide-zh-CN-v1.0.0.pdf)
+- [Download DRM-X 5.0 LearnDash Plugin](https://www.drm-x.com/download/drmx5-learndash-1.1.1.zip)
+- [English PDF User Guide](https://www.drm-x.com/download/DRM-X_5.0_Integration/DRM-X5.0-LearnDash-Integration-Plugin-User-Guide.pdf)
+- [中文 PDF 使用指南](https://www.drm-x.com/download/DRM-X_5.0_Integration_CN/DRM-X5.0-LearnDash集成插件使用指南.pdf)
 
 ## Installation
 
 1. Install and activate LearnDash.
 2. In WordPress, open **Plugins > Add New Plugin > Upload Plugin**.
-3. Upload `drmx5-learndash-1.0.0.zip` and activate it.
+3. Upload `drmx5-learndash-1.1.1.zip` and activate it.
 4. Open **Settings > DRM-X 5.0**.
 
 For manual installation, copy the plugin to:
@@ -68,13 +68,13 @@ wp-content/plugins/drmx5-learndash/
 | `GroupID` | DRM-X user group used for user creation and license requests. |
 | Service area | International uses `5.drm-x.com`; China uses `5.drm-x.cn`. |
 | RightsID mode | Read the License Profile RightsID from POST, or use a fixed RightsID and update it automatically. |
-| Fixed RightsID | Required only in fixed mode. |
+| Fixed RightsID | In fixed mode, enter one or more numeric IDs separated by English commas. Disabled in POST mode; the saved value is retained. |
 
 ### RightsID modes
 
 **Read RightsID from ZJGet POST data:** ZJGet submits the RightsID configured through the DRM-X License Profile. The plugin uses it for license delivery and does not update the DRM-X permission.
 
-**Fixed RightsID and automatic update:** the plugin calls `UpdateRightWithDisableVirtualMachine` before every license request. It uses LearnDash course-access start and expiration timestamps when available; missing values fall back to the request time and an expiration ten years later. `ExpirationAfterFirstUse` is `-1`.
+**Fixed RightsID and automatic update:** the plugin calls `UpdateRightWithDisableVirtualMachine` before every license request. It uses LearnDash course-access start and expiration timestamps when available; missing values fall back to the request time and an expiration ten years later. `ExpirationAfterFirstUse` is `-1`. Enter multiple numeric RightsIDs with English commas, for example `123,456,789`. Each license request randomly chooses one ID, reads its original description through `GetRights`, preserves that description during the update, and issues the license using that same ID. Multiple IDs reduce but do not eliminate concurrent rights conflicts.
 
 ## DRM-X License Profile setup
 
@@ -154,10 +154,14 @@ During DRM-X user creation or licensing, the plugin may send the WordPress usern
 - 支持直接加入课程以及 LearnDash Group 授予的有效访问权限。
 - 支持 `123-124-208` 格式的多课程 ID。
 - DRM-X 用户不存在时自动创建，被吊销或锁定时拒绝许可证。
-- 支持中国版、国际版和两种 RightsID 模式。
+- 支持中国版、国际版和两种 RightsID 模式；固定模式可填写多个 RightsID，以英文逗号分隔，并随机选取一个。更新时保留原权限描述。
 - 使用 `[zjget-player]URL[/zjget-player]` 嵌入加密视频。
 
 安装后进入 **设置 > DRM-X 5.0**，填写 `AdminEmail`、`WebServiceAuthStr`、`GroupID`、服务区域和 RightsID 模式。然后在 DRM-X 5.0 许可证模板的 **Your Product ID** 中填写 LearnDash 课程文章 ID。
+
+[下载 DRM-X 5.0 LearnDash 插件](https://www.drm-x.com/download/drmx5-learndash-1.1.1.zip)
+
+[中文 PDF 使用指南](https://www.drm-x.com/download/DRM-X_5.0_Integration_CN/DRM-X5.0-LearnDash集成插件使用指南.pdf)
 
 ## Support
 

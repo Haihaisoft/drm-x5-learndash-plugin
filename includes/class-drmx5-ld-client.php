@@ -122,6 +122,16 @@ class DRMX5_LD_Client {
     }
 
     public function update_rights($rights_id, $watermark, $course_start, $course_end) {
+        $rights_response = $this->soap->__soapCall('GetRights', array('parameters' => array(
+            'Email' => $this->admin_email,
+            'WebServiceAuthStr' => $this->auth_string,
+            'RightsID' => $rights_id,
+        )));
+        if (!isset($rights_response->GetRightsResult) || !is_object($rights_response->GetRightsResult) ||
+            !property_exists($rights_response->GetRightsResult, 'RightsDescription')) {
+            throw new RuntimeException(__('DRM-X did not return a valid rights description.', 'drmx5-learndash'));
+        }
+        $rights_description = (string) $rights_response->GetRightsResult->RightsDescription;
         $utc = new DateTimeZone('UTC');
         $begin_date = wp_date('Y/m/d', (int) $course_start, $utc);
         $expiration_date = wp_date('Y/m/d', (int) $course_end, $utc);
@@ -129,7 +139,7 @@ class DRMX5_LD_Client {
             'AdminEmail' => $this->admin_email,
             'WebServiceAuthStr' => $this->auth_string,
             'RightsID' => $rights_id,
-            'Description' => 'WordPress LearnDash DRM-X 5.0',
+            'Description' => $rights_description,
             'PlayCount' => '-1',
             'BeginDate' => $begin_date,
             'ExpirationDate' => $expiration_date,

@@ -41,14 +41,40 @@ class DRMX5_LD_Settings {
 
     public static function sanitize($input) {
         $input = is_array($input) ? $input : array();
+        $fixed_rights_id = trim((string) ($input['fixed_rights_id'] ?? ''));
+        $rights_ids = self::parse_rights_ids($fixed_rights_id);
+        if ($fixed_rights_id !== '' && !$rights_ids) {
+            add_settings_error('drmx5_ld_settings', 'invalid_fixed_rights_ids',
+                __('Enter positive numeric RightsIDs separated by commas.', 'drmx5-learndash'));
+            $previous = get_option('drmx5_ld_settings', array());
+            $fixed_rights_id = is_array($previous) ? (string) ($previous['fixed_rights_id'] ?? '') : '';
+        } else {
+            $fixed_rights_id = implode(',', $rights_ids);
+        }
         return array(
             'admin_email' => sanitize_email($input['admin_email'] ?? ''),
             'webservice_auth' => sanitize_text_field($input['webservice_auth'] ?? ''),
             'group_id' => preg_replace('/[^A-Za-z0-9_-]/', '', (string) ($input['group_id'] ?? '')),
             'service_area' => ($input['service_area'] ?? '') === 'china' ? 'china' : 'international',
             'rights_mode' => ($input['rights_mode'] ?? '') === 'fixed' ? 'fixed' : 'post',
-            'fixed_rights_id' => preg_replace('/[^A-Za-z0-9_-]/', '', (string) ($input['fixed_rights_id'] ?? '')),
+            'fixed_rights_id' => $fixed_rights_id,
         );
+    }
+
+    public static function parse_rights_ids($value) {
+        $value = trim((string) $value);
+        if ($value === '') {
+            return array();
+        }
+        $ids = array();
+        foreach (explode(',', $value) as $part) {
+            $id = trim($part);
+            if (!preg_match('/^[1-9][0-9]*$/D', $id) || filter_var($id, FILTER_VALIDATE_INT) === false) {
+                return array();
+            }
+            $ids[$id] = $id;
+        }
+        return array_values($ids);
     }
 
     public static function action_links($links) {
@@ -90,11 +116,34 @@ class DRMX5_LD_Settings {
                             <option value="post" <?php selected($options['rights_mode'], 'post'); ?>><?php esc_html_e('Read the License Profile RightsID from ZJGet POST data', 'drmx5-learndash'); ?></option>
                         </select><p class="description"><?php esc_html_e('Fixed mode updates the configured permission. POST mode uses the RightsID supplied from the DRM-X License Profile through ZJGet and does not update it.', 'drmx5-learndash'); ?></p></td>
                     </tr>
-                    <?php self::text_row('fixed_rights_id', __('Fixed RightsID', 'drmx5-learndash'), __('Required only in fixed mode. The plugin updates this permission before obtaining the license.', 'drmx5-learndash'), $options); ?>
+                    <?php self::text_row('fixed_rights_id', __('Fixed RightsID', 'drmx5-learndash'), __('Separate multiple RightsIDs with commas. One is chosen at random to reduce concurrent rights conflicts.', 'drmx5-learndash'), $options); ?>
                 </table>
 
                 <?php submit_button(); ?>
             </form>
+
+            <style>#drmx5-fixed_rights_id:disabled{background:#f0f0f1;color:#757575;cursor:not-allowed}</style>
+            <script>
+            (function () {
+                var mode = document.getElementById('drmx5-rights-mode');
+                var field = document.getElementById('drmx5-fixed_rights_id');
+                var preserved = document.getElementById('drmx5-fixed-rights-id-preserved');
+                if (!mode || !field || !preserved) {
+                    return;
+                }
+                function sync() {
+                    preserved.value = field.value;
+                    var fixed = mode.value === 'fixed';
+                    field.disabled = !fixed;
+                    preserved.disabled = fixed;
+                }
+                mode.addEventListener('change', sync);
+                field.addEventListener('input', function () {
+                    preserved.value = field.value;
+                });
+                sync();
+            }());
+            </script>
 
             <hr>
             <h2><?php esc_html_e('Integration address', 'drmx5-learndash'); ?></h2>
@@ -115,7 +164,13 @@ class DRMX5_LD_Settings {
         <tr>
             <th scope="row"><label for="drmx5-<?php echo esc_attr($key); ?>"><?php echo esc_html($label); ?></label></th>
             <td><input class="regular-text" id="drmx5-<?php echo esc_attr($key); ?>" type="<?php echo esc_attr($type); ?>"
-                name="drmx5_ld_settings[<?php echo esc_attr($key); ?>]" value="<?php echo esc_attr($options[$key]); ?>" autocomplete="off">
+                name="drmx5_ld_settings[<?php echo esc_attr($key); ?>]" value="<?php echo esc_attr($options[$key]); ?>" autocomplete="off"
+                <?php if ($key === 'fixed_rights_id') { disabled($options['rights_mode'], 'post'); } ?>>
+                <?php if ($key === 'fixed_rights_id') : ?>
+                    <input type="hidden" id="drmx5-fixed-rights-id-preserved"
+                        name="drmx5_ld_settings[fixed_rights_id]" value="<?php echo esc_attr($options[$key]); ?>"
+                        <?php disabled($options['rights_mode'], 'fixed'); ?>>
+                <?php endif; ?>
                 <p class="description"><?php echo esc_html($description); ?></p></td>
         </tr>
         <?php

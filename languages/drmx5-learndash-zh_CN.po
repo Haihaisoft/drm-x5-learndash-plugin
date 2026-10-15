@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: DRM-X 5.0 Integration for LearnDash 1.0.0\n"
+"Project-Id-Version: DRM-X 5.0 Integration for LearnDash 1.1.0\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -115,8 +115,14 @@ msgstr "固定模式会更新配置的权限；POST 模式使用 DRM-X 许可证
 msgid "Fixed RightsID"
 msgstr "固定 RightsID"
 
-msgid "Required only in fixed mode. The plugin updates this permission before obtaining the license."
-msgstr "仅固定模式需要。插件会在获取许可证前更新此权限。"
+msgid "Separate multiple RightsIDs with commas. One is chosen at random to reduce concurrent rights conflicts."
+msgstr "多个 RightsID 用英文逗号分隔。每次随机选取一个，以降低并发时权限数据串用的概率。"
+
+msgid "Enter positive numeric RightsIDs separated by commas."
+msgstr "请输入以英文逗号分隔的正整数 RightsID。"
+
+msgid "DRM-X did not return a valid rights description."
+msgstr "DRM-X 未返回有效的权限描述。"
 
 msgid "Integration address"
 msgstr "集成地址"
